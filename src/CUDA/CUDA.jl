@@ -16,6 +16,13 @@ end
 # ╔═╡ e5020bc7-a803-47c5-b38e-8879937c8a5f
 using PlutoUI, CUDA, BenchmarkTools
 
+# ╔═╡ 04b9a546-dc75-440e-bc74-9bbcc945f5f4
+begin
+	using Statistics
+	matriz_datos = rand(Float32, 2500, 2500)
+	matriz_datos_gpu = CuArray(matriz_datos)
+end
+
 # ╔═╡ f3a89703-2903-4874-9a57-5f84e401c970
 using Tullio, CUDAKernels, KernelAbstractions
 
@@ -80,7 +87,7 @@ Ya que CUDA.jl y Julia siguen un paradigma funcional, en el cual es preferible q
 
 Volviendo al tema del paralelismo, podemos comparar una implementación vectorizada con una secuencial:
 
-**Implementación del algoritmo:**
+**Implementación del algoritmo basado en map:**
 """
 
 # ╔═╡ 61a34fe6-83a5-4508-80af-c449fdbba7d1
@@ -103,6 +110,23 @@ elseif tipo_algoritmo == "iter"
 		end
 else
 	@benchmark map(x -> x^2 + 3x - 2, arr1)
+end
+
+# ╔═╡ 47501814-869e-4c2b-9918-323600dc3d63
+md"""
+Otro ejemplo:
+
+**Implementación del algoritmo (cov):**
+"""
+
+# ╔═╡ 2680dbf0-4af4-4d18-beaf-8961203fc2cd
+@bind tipo_algoritmo_2 Radio(["vect" => "CUDA", "iter" => "Julia"], default="vect")
+
+# ╔═╡ 8c315cd4-946b-4c6e-9152-173c18efd7fa
+if tipo_algoritmo_2 == "vect"
+	@benchmark CUDA.@sync cov(matriz_datos_gpu)
+else
+	@benchmark cov(matriz_datos)
 end
 
 # ╔═╡ 61f7b6f6-698b-4f00-84c2-90b288a3c3a7
@@ -384,9 +408,6 @@ let
 	v_c
 end
 
-# ╔═╡ c4f5ec83-4a82-48c5-98e8-c27e5267cc5f
-
-
 # ╔═╡ 1d2f4bc8-64bd-489e-ac68-f9d5c21f11b2
 md"""
 La programación de kernels rápidamente se vuelve más complicada debido a que:
@@ -445,28 +466,176 @@ let
 end
 
 # ╔═╡ 5e51ce22-ec1d-47c6-ab5c-eec254b0ec72
+md"""
+Una forma más sencilla de calcular los recursos necesarios: **Occupancy API**
+"""
 
+# ╔═╡ 6cc5f45d-a149-4603-b5f5-2b895e37d134
+let
+	v_a = CuArray(1:100_000)
+	v_b = CuArray(2:2:200_000)
+	v_c = similar(v_a)
+		
+	kernel = @cuda launch = false vadd_bloques(v_c, v_a, v_b)
+	
+	config = CUDA.launch_configuration(kernel.fun)
+end
 
-# ╔═╡ 99bb15a4-ec97-4230-9812-79caa94a0334
+# ╔═╡ ee8da3f3-ca78-433c-8510-40c0ea8958ba
+let
+	v_a = CuArray(1:100_000)
+	v_b = CuArray(2:2:200_000)
+	v_c = similar(v_a)
+	
+	t = min(length(v_a), 1024)
+	b = cld(length(v_a), t)
+	
+	@cuda threads=t blocks=b vadd_bloques(v_c, v_a, v_b)
+	
+	(t, b, v_c)
+end
 
+# ╔═╡ 5b8de2c3-23e3-4f80-b95a-d01b3397bb2b
+md"""
+En este caso, el API de CUDA calculó que lo más óptimo para nuestra operación sobre esas entradas sería lanzar 40 bloques de 1024 hilos cada uno. Realmente esto no sería suficiente para nuestra operación dado el kernel actual, pero el kernel se puede modificar para que funcione de esa manera.
+"""
 
-# ╔═╡ 3485b67f-f8ab-4685-a5e7-b646a06a2d94
+# ╔═╡ d9689381-94a4-45a6-812a-8ca6e3027c99
+md"""
+## Operaciones atómicas
 
+CUDA permite operaciones atómicas en sus kernels, pero estas siguien siendo bastante costosas.
+"""
 
-# ╔═╡ c363b610-933b-4dbb-8df8-0c2f88c9f030
+# ╔═╡ 307933d4-af70-4fcc-a0b9-7818487e88e6
+function reduce_atomic(op, a, b)
+	i = threadIdx().x + (blockIdx().x - 1) * blockDim().x
+	@atomic b[] = op(b[], a[i])
+	return
+end
 
+# ╔═╡ 8df9cc05-c51b-4675-9441-12f9b992222e
+let
+	arreglo = CuArray(1:16)
+	salida = CuArray([0])
+	
+	@cuda threads=length(arreglo) reduce_atomic(+, arreglo, salida)
+	
+	salida
+end
 
-# ╔═╡ ae11a23b-dad6-4dc6-95a5-c301740b1944
+# ╔═╡ 56c80ef5-d974-4a7c-9b2c-adf9bf3282b5
+sum(1:16)
 
+# ╔═╡ b6847097-a4aa-476a-b8d8-d354168553a5
+md"""
+Una ventaja clara de Julia se puede notar aquí. El código Julia toma una función como argumento y lo puede aplicar debido a la compilación del código a kernel.
+"""
 
-# ╔═╡ f2b16b1d-b965-4078-96dc-1c5c7fc710c8
+# ╔═╡ 87089c7e-db1d-42d2-bdec-57e3c42801b7
+md"""
+## Algunos ejemplos más avanzados
 
+Este ejemplo muestra el cálculo de la distancia de Haversine (es decir, entre dos puntos de una esfera).
 
-# ╔═╡ 5050df7f-c1dd-48b2-b73b-88370fc1950f
+"""
 
+# ╔═╡ bdd4e398-0049-4b1c-8114-bb7ab786d854
+function haversine_gpu(lat1::Float32, lon1::Float32, lat2::Float32, lon2::Float32, radius::Float32)
+    c1 = CUDA.cospi(lat1 / 180.0f0)
+    c2 = CUDA.cospi(lat2 / 180.0f0)
+    dlat = lat2 - lat1
+    dlon = lon2 - lon1
+    d1 = CUDA.sinpi(dlat / 360.0f0)
+    d2 = CUDA.sinpi(dlon / 360.0f0)
+    t = d2 * d2 * c1 * c2
+    a = d1 * d1 + t
+    c = 2.0f0 * CUDA.asin(CUDA.min(1.0f0, CUDA.sqrt(a)))
+    return radius * c
+end
 
-# ╔═╡ 373cbd84-8eea-4bee-8eee-0df49e85b68f
+# ╔═╡ 834a723b-52cf-4cc8-a815-9175be6370b6
+md"""
+En la siguiente función, se muestran algunas de las características más avanzadas de CUDA.jl:
+- Usar índices bidimensionales para bloques e hilos.
+- Utilizar memoria compartida dentro del bloque en vez de solo global.
+- Funciones en dispositivo (llamadas dentro de la GPU para ejecutar en la GPU).
+- Sincronización de hilos dentro de un kernel.
 
+Esta se encarga de calcular las distancias de todos los puntos a todos los puntos.
+"""
+
+# ╔═╡ 0407b18f-216f-47d2-8102-ad58326f9baa
+# pairwise distance calculation kernel
+function pairwise_dist_kernel(lat::CuDeviceVector{Float32}, lon::CuDeviceVector{Float32},
+                              rowresult::CuDeviceMatrix{Float32}, n)
+    i = (blockIdx().x-1) * blockDim().x + threadIdx().x
+    j = (blockIdx().y-1) * blockDim().y + threadIdx().y
+
+    if i <= n && j <= n
+        # store to shared memory
+        shmem = @cuDynamicSharedMem(Float32, 2*blockDim().x + 2*blockDim().y)
+        if threadIdx().y == 1
+            shmem[threadIdx().x] = lat[i]
+            shmem[blockDim().x + threadIdx().x] = lon[i]
+        end
+        if threadIdx().x == 1
+            shmem[2*blockDim().x + threadIdx().y] = lat[j]
+            shmem[2*blockDim().x + blockDim().y + threadIdx().y] = lon[j]
+        end
+        sync_threads()
+
+        # load from shared memory
+        lat_i = shmem[threadIdx().x]
+        lon_i = shmem[blockDim().x + threadIdx().x]
+        lat_j = shmem[2*blockDim().x + threadIdx().y]
+        lon_j = shmem[2*blockDim().x + blockDim().y + threadIdx().y]
+
+        @inbounds rowresult[i, j] = haversine_gpu(lat_i, lon_i, lat_j, lon_j, 6372.8f0)
+    end
+
+    return
+end
+
+# ╔═╡ f9ec57fc-f7d1-4231-a873-0371250d48fd
+let
+	n = 10_000
+	
+	lat_gpu = CUDA.rand(n) .* 45
+    lon_gpu = CUDA.rand(n) .* -120
+
+    #Matriz resultante
+    rowresult_gpu = CUDA.zeros(n, n)
+
+    # calculate a 2D block size from the suggested 1D configuration
+    # NOTE: we want our launch configuration to be as square as possible,
+    #       because that minimizes shared memory usage
+    function get_threads(threads)
+        threads_x = floor(Int, sqrt(threads))
+        threads_y = threads ÷ threads_x
+        return (threads_x, threads_y)
+    end
+
+    # calculate the amount of dynamic shared memory for a 2D block size
+    get_shmem(threads) = 2 * sum(threads) * sizeof(Float32)
+
+    kernel = @cuda launch=false pairwise_dist_kernel(lat_gpu, lon_gpu, rowresult_gpu, n)
+    config = launch_configuration(kernel.fun, shmem=threads->get_shmem(get_threads(threads)))
+
+    # convert to 2D block size and figure out appropriate grid size
+    t = get_threads(config.threads)
+    b = ceil.(Int, n ./ t)
+    s = get_shmem(t)
+
+    kernel(lat_gpu, lon_gpu, rowresult_gpu, n; threads=t, blocks=b, shmem=s)
+	
+	rowresult_gpu
+end
+
+# ╔═╡ 2597a206-5396-4c33-98d9-7ea6b2dbbeca
+md"""
+Como se puede notar, CUDA.jl tiene un grado de flexibilidad alto. Por un lado, puede servir como un reemplazo para operaciones complejas tan solo reemplazando el tipo de arreglo que se utiliza. Por el otro lado, puede utilizar optimizaciones de bajo nivel de CUDA, enriqueciéndolas con el poder del lenguaje puro.
+"""
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -480,6 +649,7 @@ LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
+Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 Tullio = "bc48ee85-29a4-5162-ae0b-a64e1601d4bc"
 
 [compat]
@@ -1464,6 +1634,10 @@ version = "0.9.1+5"
 # ╠═f5820a28-20ef-4fb3-a466-515ebedd0676
 # ╠═04b92cdc-f0d5-43a4-b0b6-31e044ee841b
 # ╠═9407c96c-03bc-4066-a9ef-14ae7e5037e1
+# ╟─47501814-869e-4c2b-9918-323600dc3d63
+# ╟─2680dbf0-4af4-4d18-beaf-8961203fc2cd
+# ╠═04b9a546-dc75-440e-bc74-9bbcc945f5f4
+# ╠═8c315cd4-946b-4c6e-9152-173c18efd7fa
 # ╟─61f7b6f6-698b-4f00-84c2-90b288a3c3a7
 # ╟─1f74f846-6d8d-48f5-9dc1-391d59cbc164
 # ╠═04987ac0-cf32-42c6-884f-5d19c4aafec9
@@ -1521,7 +1695,6 @@ version = "0.9.1+5"
 # ╟─3804d33f-4908-4ff8-841a-d80a9f53e6ee
 # ╠═7bc4bffa-3faf-42f7-acc4-4e8c28181271
 # ╠═e6d23eb4-c10d-489f-8390-f344dd4b81db
-# ╠═c4f5ec83-4a82-48c5-98e8-c27e5267cc5f
 # ╟─1d2f4bc8-64bd-489e-ac68-f9d5c21f11b2
 # ╟─74fdc782-cba9-417a-b515-9ad8c38ad2b3
 # ╠═0b9eeec1-fbb6-4408-9b42-79f20017fb74
@@ -1530,13 +1703,20 @@ version = "0.9.1+5"
 # ╟─13e45f04-6626-46e8-9960-f63b0db6b01b
 # ╠═4d83c990-81f2-4b94-8a8a-95905df93594
 # ╠═08a44e3e-daac-4a07-a1d8-a1bec02c0349
-# ╠═5e51ce22-ec1d-47c6-ab5c-eec254b0ec72
-# ╠═99bb15a4-ec97-4230-9812-79caa94a0334
-# ╠═3485b67f-f8ab-4685-a5e7-b646a06a2d94
-# ╠═c363b610-933b-4dbb-8df8-0c2f88c9f030
-# ╠═ae11a23b-dad6-4dc6-95a5-c301740b1944
-# ╠═f2b16b1d-b965-4078-96dc-1c5c7fc710c8
-# ╠═5050df7f-c1dd-48b2-b73b-88370fc1950f
-# ╠═373cbd84-8eea-4bee-8eee-0df49e85b68f
+# ╟─5e51ce22-ec1d-47c6-ab5c-eec254b0ec72
+# ╠═6cc5f45d-a149-4603-b5f5-2b895e37d134
+# ╠═ee8da3f3-ca78-433c-8510-40c0ea8958ba
+# ╟─5b8de2c3-23e3-4f80-b95a-d01b3397bb2b
+# ╟─d9689381-94a4-45a6-812a-8ca6e3027c99
+# ╠═307933d4-af70-4fcc-a0b9-7818487e88e6
+# ╠═8df9cc05-c51b-4675-9441-12f9b992222e
+# ╠═56c80ef5-d974-4a7c-9b2c-adf9bf3282b5
+# ╟─b6847097-a4aa-476a-b8d8-d354168553a5
+# ╟─87089c7e-db1d-42d2-bdec-57e3c42801b7
+# ╠═bdd4e398-0049-4b1c-8114-bb7ab786d854
+# ╟─834a723b-52cf-4cc8-a815-9175be6370b6
+# ╠═0407b18f-216f-47d2-8102-ad58326f9baa
+# ╠═f9ec57fc-f7d1-4231-a873-0371250d48fd
+# ╟─2597a206-5396-4c33-98d9-7ea6b2dbbeca
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
