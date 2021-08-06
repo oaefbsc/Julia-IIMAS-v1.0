@@ -26,10 +26,15 @@ using CUDA
 using Colors
 
 # ╔═╡ f3dae82b-699c-4237-aebc-39e02e451837
-md"# Ciencia de Datos pt. 2"
+md"""# Ciencia de Datos pt. 3
+
+	- Oscar Alejando Esquivel Flores
+	- Óscar Anuar Alvarado Morán
+	- Mario Horacio Garrido Czacki
+"""
 
 # ╔═╡ a2a725cb-5aa5-4627-aac4-018a4a63e4b4
-PlutoUI.TableOfContents(title="🔬 Ciencia de datos pt. 2 🔭", depth = 5)
+PlutoUI.TableOfContents(title="🔬 Ciencia de datos pt. 3 🔭", depth = 5)
 
 # ╔═╡ a7c163f2-df19-4cf2-aee2-349c75cd28b0
 md"# Aprendizaje profundo"
@@ -161,7 +166,7 @@ Base.@kwdef mutable struct Args
     infotime = 1 	     # report every `infotime` epochs
     checktime = 5        # Save the model every `checktime` epochs. Set to 0 for no checkpoints.
     tblogger = true      # log training with tensorboard
-    savepath = "/home/pilares/Escritorio"       # results path
+    savepath = "./modelo/"       # results path
 end
 
 # ╔═╡ d2edf222-0bf0-4a86-94c7-e65f01ca955d
@@ -1044,12 +1049,12 @@ version = "3.15.6+0"
 
 # ╔═╡ Cell order:
 # ╟─f3dae82b-699c-4237-aebc-39e02e451837
+# ╠═2f87cbf3-75a1-45f4-afef-fbd324ec351f
 # ╟─a2a725cb-5aa5-4627-aac4-018a4a63e4b4
 # ╟─a7c163f2-df19-4cf2-aee2-349c75cd28b0
 # ╟─449ee180-4a38-45e9-ab65-255dbe8abee8
 # ╟─2173f1c7-c168-455d-b57b-0ca7c2aa2355
 # ╟─8ca80cbc-237a-408a-a070-a716e86a272f
-# ╠═2f87cbf3-75a1-45f4-afef-fbd324ec351f
 # ╠═790d1872-28a8-461b-889b-93165adf79f0
 # ╠═b7d682c3-60c9-46c0-9113-81b826dde629
 # ╠═7a747250-756c-4b8e-aaf2-63140b167049

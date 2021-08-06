@@ -43,7 +43,7 @@ using UrlDownload
 using MLJScikitLearnInterface #También hay que instalar scikit-learn donde sea que tengamos a Julia, en mi caso, uso pip3 install scikit-learn
 
 # ╔═╡ 6b4a8fd1-60f5-4760-a453-86a75a201a5f
-md"""# Ciencia de Datos
+md"""# Ciencia de Datos pt. 1
 
 	- Oscar Alejando Esquivel Flores
 	- Óscar Anuar Alvarado Morán
@@ -51,7 +51,7 @@ md"""# Ciencia de Datos
 """
 
 # ╔═╡ ef6340c4-f4f7-11eb-30f9-599dcebb98be
-PlutoUI.TableOfContents(title="🔬 Ciencia de datos 🔭", depth = 5)
+PlutoUI.TableOfContents(title="🔬 Ciencia de datos pt. 1 🔭", depth = 5)
 
 # ╔═╡ d24051dc-5efa-48c8-b65b-c756ba43b864
 md"# Manejo de datos"
@@ -66,7 +66,7 @@ md"### Leyendo csv
 Usemos la función `CSV.File` para leer archivos `.csv`. Podemos hacerlo desde archivos locales:"
 
 # ╔═╡ a3c21e5d-a030-4cf3-aed3-e7100a885d37
-hotel = CSV.File("Julia-IIMAS-v1.0/datos/hotel_bookings.csv")
+hotel = CSV.File("../..//datos/hotel_bookings.csv")
 
 # ╔═╡ 6baca64d-6dcb-44d7-b03d-69c0322631fe
 md"O también podemos leer desde una página con la paquetería `HTTP.jl`"
@@ -522,8 +522,6 @@ md"""
 [Conjunto de datos Orange Juice](https://rdrr.io/cran/ISLR/man/OJ.html):
 
 "The data contains 1070 purchases where the customer either purchased Citrus Hill or Minute Maid Orange Juice. A number of characteristics of the customer and product are recorded."
-
-
 """
 
 # ╔═╡ 45bb9873-5eac-4e62-a041-0c4f47975462
@@ -2091,39 +2089,39 @@ version = "0.9.1+5"
 # ╠═65729744-b221-488d-b1ad-85981489916c
 # ╟─c0b3f6a7-341c-435a-b528-3a190f5c500c
 # ╟─185015b8-d252-4beb-96f0-4d2483f79344
-# ╟─e9fcbd2a-6c9b-4e07-bcae-b990ebc1a3da
-# ╟─042c51dc-80d8-4c19-9c87-4e3e83de5e19
-# ╟─eda00801-1169-4f24-ad20-56585835002a
+# ╠═e9fcbd2a-6c9b-4e07-bcae-b990ebc1a3da
+# ╠═042c51dc-80d8-4c19-9c87-4e3e83de5e19
+# ╠═eda00801-1169-4f24-ad20-56585835002a
 # ╠═7ef54d4e-a43d-4b37-8b2e-021d9a5ea99f
-# ╟─6f396986-414e-4a2a-a1b4-fb097e1759df
+# ╠═6f396986-414e-4a2a-a1b4-fb097e1759df
 # ╠═37aef421-934c-4d0e-a78e-7da96f8b3edc
-# ╟─6d09d7e5-57d8-4619-b409-3fea32f427a4
+# ╠═6d09d7e5-57d8-4619-b409-3fea32f427a4
 # ╠═9d3e1566-7dbf-4cdc-9a79-796b1bb9b961
-# ╟─eef96558-9a43-447f-a52d-a44636e5015d
+# ╠═eef96558-9a43-447f-a52d-a44636e5015d
 # ╠═9ead4d07-7586-480a-a24a-7eb866d4b130
-# ╟─a75720f2-9d56-4e1e-8fdd-e4d248871367
+# ╠═a75720f2-9d56-4e1e-8fdd-e4d248871367
 # ╠═b33417a7-6263-4954-a923-c6716c61f2bf
 # ╠═0eea30b5-7729-40c8-aadf-8017fa3e740d
-# ╟─9c3f3c32-ec53-46db-8b06-a446d3871175
+# ╠═9c3f3c32-ec53-46db-8b06-a446d3871175
 # ╠═35cfad5a-cc8b-4c14-81e6-808ec0f67008
-# ╟─6c8ee67c-66ee-480f-9154-01cf26583215
+# ╠═6c8ee67c-66ee-480f-9154-01cf26583215
 # ╠═2d5b8029-d913-43ff-bab4-3319c5681e71
-# ╟─7959d6c7-5b4a-4865-8fd1-3934cef54755
+# ╠═7959d6c7-5b4a-4865-8fd1-3934cef54755
 # ╠═f7fd7736-f30d-40ea-af14-c422a31fbd77
-# ╟─1cb799aa-dfe3-4b24-baf1-a2ad9c68c6d3
+# ╠═1cb799aa-dfe3-4b24-baf1-a2ad9c68c6d3
 # ╠═1274b8b5-8aa2-4b83-8170-fac74bebb946
-# ╟─73691cc0-f43d-46ab-952b-d877a16de744
+# ╠═73691cc0-f43d-46ab-952b-d877a16de744
 # ╠═0bff6458-b298-4ea2-b1f8-01b00ce185b5
-# ╟─f48cce8b-6b4d-47e7-9827-26cd2a847a38
+# ╠═f48cce8b-6b4d-47e7-9827-26cd2a847a38
 # ╠═565cb36b-96a6-4a05-b1b0-5ab8b95478d5
 # ╠═8f44f8fa-53f3-490d-8835-0bb32cbc23d2
-# ╟─610fa1c7-8c0c-4608-bc36-f7c8aa3f0f3b
-# ╟─b211535c-fd8b-4f84-b88b-2ea2286a58f4
+# ╠═610fa1c7-8c0c-4608-bc36-f7c8aa3f0f3b
+# ╠═b211535c-fd8b-4f84-b88b-2ea2286a58f4
 # ╠═45bb9873-5eac-4e62-a041-0c4f47975462
 # ╠═728d6e97-9e60-4e42-b9ad-39c1a2e32808
 # ╠═43594135-f686-4649-8f03-c87c7294315c
 # ╠═60751597-b4b6-46e4-b2fe-a18de27301ef
-# ╟─131dc691-87b0-46f6-ba6e-1a421b491f7d
+# ╠═131dc691-87b0-46f6-ba6e-1a421b491f7d
 # ╠═76e7ce0e-7c62-45e2-a02e-2f2283c56c3b
 # ╠═5f5f9329-d62f-48cb-9ddb-c68e4f7886b5
 # ╠═7a981cc3-1a22-407c-aafe-69f170c64062
@@ -2133,8 +2131,8 @@ version = "0.9.1+5"
 # ╠═9ecc20b5-538e-415b-80c3-c4fad54b0ccf
 # ╠═95be3be8-af10-4286-97b0-5366792ad349
 # ╠═a0ef1009-87bb-4f04-86f8-cf61f69577a1
-# ╟─a506982f-6ab8-4f90-9974-8ccbc5e15d35
-# ╟─353d48a4-20ea-4167-bf93-c517e3488220
+# ╠═a506982f-6ab8-4f90-9974-8ccbc5e15d35
+# ╠═353d48a4-20ea-4167-bf93-c517e3488220
 # ╠═65e9979c-ec08-4093-9a35-3b872da2dee1
 # ╠═c0385ff2-3c5a-4f01-acb8-a036cd5c85ff
 # ╠═8934fed8-f0ba-4635-9d96-74b9751c8b95
