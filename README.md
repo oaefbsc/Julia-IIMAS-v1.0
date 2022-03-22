@@ -6,7 +6,7 @@ El lenguaje de programación Julia es un lenguaje de alto nivel orientado hacia 
 
 Por estas razones, además de nuestro gusto por conocer nuevos lenguajes de programación motivantes, nos dimos a la tarea de recopilar el código de Julia que hemos estado estudiando y elaborando para ampliar la cobertura de Julianos en nuestra comunidad universitaria.
 
-Agradecemos a la DGAPA-UNAM por apoyar el programa PAPIIT-IA104720 que nos permite llevar acabo este intercambio de conocimiento Juliano.
+Esta investigación se **realizó gracias al programa UNAM-PAPIIT-IA104720** sin el cual no podríamos llevar acabo este intercambio de conocimiento Juliano.
 
 ### INSTRUCTORES:
 Oscar Alejandro Esquivel
