@@ -15,6 +15,8 @@ Oscar Alejandro Esquivel
 
 Mario Horacio Garrido Czacki
 
+<img src="Curso_Julia_Poster" alt="drawing" width="200"/>
+
 ### FECHAS
 02/08/2020-06/08/2020
 
