@@ -28,4 +28,4 @@ Mario Horacio Garrido Czacki
 - Introducción al paralelismo
 - Caso de aplicación
 
-**Agradecemos a la DGAPA-UNAM por apoyar el programa PAPIIT-IA104720 que nos permite llevar acabo este intercambio de conocimiento Juliano.**
+
